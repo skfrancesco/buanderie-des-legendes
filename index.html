@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buanderie des Légendes</title>
+<style>
+  :root {
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --gray: #6b7280;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 20px;
+    margin: 4px 0 2px 0;
+  }
+  .subtitle {
+    color: var(--gray);
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .name-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+  }
+  .name-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+  }
+  .name-bar label {
+    font-size: 13px;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+  .machine {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .machine-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .machine-title {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .badge.free { background: var(--green-light); color: var(--green); }
+  .badge.busy { background: var(--red-light); color: var(--red); }
+  .info-row {
+    font-size: 13px;
+    color: var(--gray);
+    margin: 2px 0;
+  }
+  .progress-track {
+    height: 8px;
+    background: var(--border);
+    border-radius: 999px;
+    margin: 10px 0 12px 0;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--blue);
+    border-radius: 999px;
+    transition: width 1s linear;
+  }
+  .time-left {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-primary { background: var(--blue); color: white; width: 100%; }
+  .btn-primary:active { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.6; }
+  .btn-secondary {
+    background: var(--red-light);
+    color: var(--red);
+    width: 100%;
+    margin-top: 8px;
+  }
+  .duration-picker {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .duration-chip {
+    flex: 1;
+    min-width: 54px;
+    text-align: center;
+    background: var(--blue-light);
+    color: var(--blue);
+    border-radius: 10px;
+    padding: 8px 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .duration-chip.selected {
+    border-color: var(--blue);
+  }
+  .custom-duration {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .custom-duration label {
+    font-size: 12px;
+    color: var(--gray);
+    white-space: nowrap;
+  }
+  .custom-duration input {
+    width: 90px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .history {
+    margin-top: 20px;
+  }
+  .history h2 {
+    font-size: 14px;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+  .history-item {
+    font-size: 13px;
+    color: var(--gray);
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .empty-history {
+    font-size: 13px;
+    color: var(--gray);
+    font-style: italic;
+  }
+  .error-banner {
+    background: var(--red-light);
+    color: var(--red);
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .status-banner {
+    background: var(--blue-light);
+    color: var(--blue);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🧺 Buanderie des Légendes</h1>
+<div class="subtitle">État en temps réel, partagé avec toute la maison</div>
+
+<div id="statusBanner" class="status-banner">Connexion à Firebase…</div>
+<div id="errorBanner"></div>
+
+<div class="name-bar">
+  <label for="userName">Ton prénom</label>
+  <input type="text" id="userName" placeholder="ex. Francesco" />
+</div>
+
+<div id="machines"></div>
+
+<div class="history">
+  <h2>Historique récent</h2>
+  <div id="historyList"></div>
+</div>
+
+<!-- Firebase SDK (compat, plain <script> tags, no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAT4ZfC3ButymtkVlWUGbBgtyRlnJjaYj8",
+  authDomain: "buanderie-des-legendes.firebaseapp.com",
+  databaseURL: "https://buanderie-des-legendes-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "buanderie-des-legendes",
+  storageBucket: "buanderie-des-legendes.firebasestorage.app",
+  messagingSenderId: "1018800607041",
+  appId: "1:1018800607041:web:607937650304825626dbc0"
+};
+
+const MACHINES = [
+  { id: 'gauche', label: 'Machine à gauche' },
+  { id: 'centre', label: 'Machine au centre' },
+  { id: 'droite', label: 'Machine à droite' }
+];
+
+let cycles = {}; // pushId -> { machine, user, start, duration }
+let userName = '';
+let dbReady = false;
+
+function showError(msg) {
+  document.getElementById('errorBanner').innerHTML =
+    `<div class="error-banner">${msg}</div>`;
+}
+function clearError() {
+  document.getElementById('errorBanner').innerHTML = '';
+}
+function setStatus(msg, ok) {
+  const el = document.getElementById('statusBanner');
+  if (!msg) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = msg;
+  el.style.background = ok ? '#dcfce7' : '#dbeafe';
+  el.style.color = ok ? '#16a34a' : '#2563eb';
+}
+
+// --- Name persistence: localStorage works fine once this file is opened
+// as a real page in a normal browser (downloaded, or hosted somewhere).
+// It's wrapped in try/catch so it degrades gracefully if storage is blocked
+// (e.g. some in-app browsers, or Claude's own preview sandbox).
+function loadName() {
+  try {
+    userName = localStorage.getItem('buanderie-my-name') || '';
+  } catch (e) {
+    userName = '';
+  }
+  document.getElementById('userName').value = userName;
+}
+function saveName(val) {
+  userName = val;
+  try {
+    localStorage.setItem('buanderie-my-name', val);
+  } catch (e) {
+    // Not persisted this session (storage unavailable) — no need to alarm the user,
+    // they can just retype it next time.
+  }
+}
+
+let db;
+function initFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    setStatus('Connexion à Firebase…', false);
+    db = firebase.database();
+    db.ref('cycles').on('value', (snapshot) => {
+      cycles = snapshot.val() || {};
+      dbReady = true;
+      setStatus('', false);
+      render();
+    }, (err) => {
+      showError("Impossible de se connecter à la base de données partagée. Vérifie ta connexion internet.");
+      setStatus('', false);
+    });
+  } catch (e) {
+    showError("Erreur d'initialisation de Firebase.");
+    setStatus('', false);
+  }
+}
+
+function cyclesArray() {
+  return Object.keys(cycles).map(key => ({ id: key, ...cycles[key] }));
+}
+
+function getActiveCycle(machineId) {
+  const now = Date.now();
+  const candidates = cyclesArray()
+    .filter(c => c.machine === machineId)
+    .filter(c => {
+      const end = new Date(c.start).getTime() + c.duration * 60000;
+      return now < end;
+    });
+  if (candidates.length === 0) return null;
+  candidates.sort((a, b) => new Date(b.start) - new Date(a.start));
+  return candidates[0];
+}
+
+function getHistory() {
+  return cyclesArray()
+    .sort((a, b) => new Date(b.start) - new Date(a.start))
+    .slice(0, 8);
+}
+
+function formatTimeLeft(ms) {
+  if (ms <= 0) return '0 min';
+  const totalMin = Math.ceil(ms / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  if (h > 0) return `${h}h ${m}min`;
+  return `${m} min`;
+}
+
+function formatStartTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function render() {
+  const container = document.getElementById('machines');
+  container.innerHTML = '';
+
+  MACHINES.forEach(machine => {
+    const active = getActiveCycle(machine.id);
+    const div = document.createElement('div');
+    div.className = 'machine';
+
+    if (active) {
+      const start = new Date(active.start).getTime();
+      const end = start + active.duration * 60000;
+      const now = Date.now();
+      const pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
+      const remaining = end - now;
+
+      div.innerHTML = `
+        <div class="machine-header">
+          <div class="machine-title">${machine.label}</div>
+          <div class="badge busy">Occupée</div>
+        </div>
+        <div class="info-row">Lancée par <strong>${escapeHtml(active.user)}</strong> à ${formatStartTime(active.start)}</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="time-left">⏳ ${formatTimeLeft(remaining)} restantes</div>
+        <button class="btn-secondary" data-action="finish" data-id="${active.id}">Terminer maintenant (libérer la machine)</button>
+      `;
+    } else {
+      div.innerHTML = `
+        <div class="machine-header">
+          <div class="machine-title">${machine.label}</div>
+          <div class="badge free">Libre</div>
+        </div>
+        <div class="info-row">Prête à l'emploi</div>
+        <div class="duration-picker" data-machine="${machine.id}">
+          <div class="duration-chip selected" data-min="60">60 min</div>
+          <div class="duration-chip" data-min="90">90 min</div>
+          <div class="duration-chip" data-min="120">120 min</div>
+          <div class="duration-chip" data-min="180">180 min</div>
+        </div>
+        <div class="custom-duration">
+          <label>Ou durée perso (min)</label>
+          <input type="number" min="1" class="custom-duration-input" data-machine="${machine.id}" placeholder="ex. 240" />
+        </div>
+        <button class="btn-primary" data-action="start" data-id="${machine.id}" ${dbReady ? '' : 'disabled'}>Lancer un cycle</button>
+      `;
+    }
+    container.appendChild(div);
+  });
+
+  const historyList = document.getElementById('historyList');
+  const hist = getHistory();
+  if (hist.length === 0) {
+    historyList.innerHTML = '<div class="empty-history">Aucun cycle enregistré pour le moment.</div>';
+  } else {
+    historyList.innerHTML = hist.map(c => {
+      const m = MACHINES.find(mm => mm.id === c.machine);
+      return `
+        <div class="history-item">
+          <span>${m ? m.label : c.machine} · ${escapeHtml(c.user)}</span>
+          <span>${formatStartTime(c.start)} · ${c.duration} min</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  attachHandlers();
+}
+
+function attachHandlers() {
+  // Duration chips: clicking one fills the custom input and highlights the chip
+  document.querySelectorAll('.duration-picker').forEach(picker => {
+    const machineId = picker.dataset.machine;
+    const customInput = document.querySelector(`.custom-duration-input[data-machine="${machineId}"]`);
+    picker.querySelectorAll('.duration-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        picker.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('selected'));
+        chip.classList.add('selected');
+        if (customInput) customInput.value = '';
+      });
+    });
+    if (customInput) {
+      customInput.addEventListener('input', () => {
+        if (customInput.value.trim() !== '') {
+          picker.querySelectorAll('.duration-chip').forEach(c => c.classList.remove('selected'));
+        }
+      });
+    }
+  });
+
+  document.querySelectorAll('[data-action="start"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const machineId = btn.dataset.id;
+      if (!userName || userName.trim() === '') {
+        showError('Indique ton prénom en haut avant de lancer un cycle.');
+        document.getElementById('userName').focus();
+        return;
+      }
+      const picker = document.querySelector(`.duration-picker[data-machine="${machineId}"]`);
+      const customInput = document.querySelector(`.custom-duration-input[data-machine="${machineId}"]`);
+      let duration;
+      if (customInput && customInput.value.trim() !== '') {
+        duration = parseInt(customInput.value.trim());
+        if (isNaN(duration) || duration <= 0) {
+          showError('Durée personnalisée invalide.');
+          return;
+        }
+      } else {
+        const selected = picker.querySelector('.duration-chip.selected');
+        duration = parseInt(selected.dataset.min);
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Lancement...';
+
+      try {
+        await db.ref('cycles').push({
+          machine: machineId,
+          user: userName.trim(),
+          start: new Date().toISOString(),
+          duration: duration
+        });
+        clearError();
+      } catch (e) {
+        showError("Échec de l'enregistrement. Vérifie ta connexion internet et réessaie.");
+        btn.disabled = false;
+        btn.textContent = 'Lancer un cycle';
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-action="finish"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const cycleId = btn.dataset.id;
+      btn.disabled = true;
+      btn.textContent = 'Mise à jour...';
+      const cycle = cycles[cycleId];
+      if (cycle) {
+        const elapsedMin = Math.max(1, Math.round((Date.now() - new Date(cycle.start).getTime()) / 60000));
+        try {
+          await db.ref('cycles/' + cycleId).update({ duration: elapsedMin });
+          clearError();
+        } catch (e) {
+          showError("Échec de la mise à jour. Réessaie.");
+          btn.disabled = false;
+          btn.textContent = 'Terminer maintenant (libérer la machine)';
+        }
+      }
+    });
+  });
+}
+
+document.getElementById('userName').addEventListener('change', (e) => {
+  saveName(e.target.value);
+});
+
+loadName();
+initFirebase();
+render();
+
+// Refresh countdowns every 15s (Firebase 'on value' already pushes updates on data change)
+setInterval(() => { if (dbReady) render(); }, 15000);
+</script>
+
+</body>
+</html>
